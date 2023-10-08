@@ -1,6 +1,6 @@
-My implementation of https://browser.engineering/http.html in Go
+### My implementation of https://browser.engineering/http.html in Go
 
-Chapter 1 
+#### Chapter 1 
 - [x] Request an url (not using net/http to closely follow the book :)
 - [x] Parse status code
 - [x] Parse headers

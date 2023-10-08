@@ -1,25 +1,18 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"log"
-	"net"
+
+	"github.com/andrebenedetti/go-web-browser/http_client"
 )
 
-// We are not using net/http packages because the book goes lower, creating a socket
-// and building the HTTP requests by itself and we want to do it here too for fun =).
-func Visit(url string) {
-	conn, err := net.Dial("tcp", url+":80")
+func main() {
+	url := "example.org"
+	res, err := http_client.Request("GET", url)
 	if err != nil {
-		log.Fatalf("Error dialing url %s: %s", url, err)
+		log.Fatalf("Error visting %s: %s", url, err.Error())
 	}
 
-	fmt.Fprintf(conn, "GET / HTTP/1.0\r\n\r\n")
-	status, err := bufio.NewReader(conn).ReadString('\n')
-	fmt.Printf("Status: %s\n", status)
-}
-
-func main() {
-	Visit("google.com.br")
+	fmt.Println(res)
 }

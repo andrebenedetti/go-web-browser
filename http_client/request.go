@@ -11,8 +11,9 @@ import (
 )
 
 type Response struct {
-	statusCode int
-	headers    map[string]string
+	StatusCode int
+	Headers    map[string]string
+	Body       string
 }
 
 func isValidHttpMethod(method string) bool {
@@ -84,7 +85,7 @@ func Request(method string, url string) (Response, error) {
 		log.Fatalf("Error parsing status line: %s", err.Error())
 	}
 
-	resp.statusCode = statusCode
+	resp.StatusCode = statusCode
 
 	// Read headers
 	rawHeaders := make([]string, 0, 32)
@@ -109,10 +110,24 @@ func Request(method string, url string) (Response, error) {
 
 	}
 
-	resp.headers = parseHeaders(rawHeaders)
-	if resp.headers["content-encoding"] != "" || resp.headers["transfer-encoding"] != "" {
+	resp.Headers = parseHeaders(rawHeaders)
+	if resp.Headers["content-encoding"] != "" || resp.Headers["transfer-encoding"] != "" {
 		return resp, errors.New("Request encoding not implemented")
 	}
 
+	// Using 1 MB buffer size to read the page, which is a lot for a web page
+	// TODO: This can be revisited later
+	buffer := make([]byte, 10000, 10000)
+	for {
+		_, err := reader.Read(buffer)
+		if err != nil {
+			if err == io.EOF {
+				break
+			} else {
+				log.Fatalf("Error reading body: %s", err.Error())
+			}
+		}
+	}
+	resp.Body = string(buffer)
 	return resp, nil
 }

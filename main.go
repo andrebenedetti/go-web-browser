@@ -1,10 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/andrebenedetti/go-web-browser/http_client"
+	"github.com/andrebenedetti/go-web-browser/renderer"
 )
 
 func main() {
@@ -14,5 +14,5 @@ func main() {
 		log.Fatalf("Error visting %s: %s", url, err.Error())
 	}
 
-	fmt.Println(res)
+	renderer.Render(res)
 }

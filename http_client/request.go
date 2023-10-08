@@ -110,6 +110,9 @@ func Request(method string, url string) (Response, error) {
 	}
 
 	resp.headers = parseHeaders(rawHeaders)
+	if resp.headers["content-encoding"] != "" || resp.headers["transfer-encoding"] != "" {
+		return resp, errors.New("Request encoding not implemented")
+	}
 
 	return resp, nil
 }

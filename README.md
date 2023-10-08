@@ -1,2 +1,2 @@
 Chapter 1 extras
-- [ ] encoding/chunkin
+- [ ] encoding/chunking

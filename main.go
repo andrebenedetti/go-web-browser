@@ -8,11 +8,11 @@ import (
 )
 
 func main() {
-	url := "example.org"
-	res, err := http_client.Request("GET", url)
+	url := "file://go-web-browser"
+	_, err := http_client.RetrieveUrl(url)
 	if err != nil {
 		log.Fatalf("Error visting %s: %s", url, err.Error())
 	}
 
-	renderer.Render(res)
+	renderer.Start()
 }

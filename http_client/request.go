@@ -31,6 +31,8 @@ func isValidHttpMethod(method string) bool {
 	return method == "GET" || method == "HEAD" || method == "POST" || method == "PUT" || method == "DELETE" || method == "CONNECT" || method == "OPTIONS" || method == "TRACE" || method == "PATCH"
 }
 
+// Parse headers' keys and values into a map.
+// Keys are stored in lowercase.
 func parseHeaders(raw []string) map[string]string {
 	headers := make(map[string]string, len(raw))
 	for _, val := range raw {
@@ -50,7 +52,57 @@ func parseHeaders(raw []string) map[string]string {
 	return headers
 }
 
-func Request(method string, url string) (Response, error) {
+func parseUrlScheme(url string) (string, error) {
+	split := strings.Split(url, "://")
+	if len(split) > 2 {
+		return "", errors.New("Malformed url string")
+	}
+
+	// Let's assume http if no scheme is set.
+	// TODO: assume https
+	if len(split) == 1 {
+		return "http", nil
+	}
+
+	scheme := split[0]
+	if scheme != "http" && scheme != "file" {
+		return scheme, errors.New("Unsupported url scheme")
+	}
+
+	fmt.Println(scheme)
+	return scheme, nil
+}
+
+func RetrieveUrl(url string) (Response, error) {
+	scheme, err := parseUrlScheme(url)
+	if err != nil {
+		return Response{}, err
+	}
+
+	if scheme == "file" {
+		// We only support localhost files, for simplicity and because we don't want to
+		// deal with security implications of exposing file urls in this project
+		// We will also allow a special host called go-web-browser which will refer to this project's
+		// public directory.
+		splitUrl := strings.Split(url, "file://")[1]
+		host := strings.Split(splitUrl, "/")[0]
+		path := strings.Split(splitUrl, host)[1]
+
+		if host != "" && host != "localhost" && host != "go-web-browser" {
+			return Response{}, errors.New("file:// scheme pointing to a host different than localhost is not currently supported")
+		}
+		return FileRequest(host, path)
+	}
+	return HttpRequest("GET", url)
+
+}
+
+func FileRequest(host string, path string) (Response, error) {
+	fmt.Println("File request", host, path)
+	return Response{}, nil
+}
+
+func HttpRequest(method string, url string) (Response, error) {
 	// Let's copy what go's standard lib does and assume
 	// an empty string as being a GET
 	if method == "" {

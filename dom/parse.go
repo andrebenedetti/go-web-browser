@@ -31,6 +31,8 @@ func (t *tree) AddText(text string) {
 
 type ParsedTag struct {
 	isSelfClosing bool
+	// TODO: self-closing tags are not defined by the ending slash '/', as it is actually optional
+	// Some elements are by definition self closing, so we can't rely on the ending slash to parse that.
 	// isClosing means it ends with "/>" and is NOT self-closing
 	isClosing  bool
 	tag        string

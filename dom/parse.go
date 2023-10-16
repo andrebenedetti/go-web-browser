@@ -33,9 +33,6 @@ func (t *tree) AddTag(tag string) {
 		return
 	}
 	if tag[0] == '/' || tag[len(tag)-1] == '/' {
-		fmt.Printf("Adding tag: %s\n", tag)
-		// pop last node
-
 		var node *Element
 		// self closing tag needs further parsing
 		if tag[len(tag)-1] == '/' {
@@ -53,9 +50,7 @@ func (t *tree) AddTag(tag string) {
 			return
 		}
 
-		newUnifished := make([]*Element, len(t.unfinished)-1)
-		copy(newUnifished, t.unfinished[:len(t.unfinished)-1])
-		t.unfinished = newUnifished
+		t.unfinished = t.unfinished[:len(t.unfinished)-1]
 
 		parent := t.unfinished[len(t.unfinished)-1]
 		parent.children = append(parent.children, node)

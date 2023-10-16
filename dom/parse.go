@@ -10,6 +10,7 @@ type Element struct {
 	text        string
 	children    []*Element
 	parent      *Element
+	attributes  map[string]string
 }
 
 type tree struct {
@@ -28,22 +29,65 @@ func (t *tree) AddText(text string) {
 	parent.children = append(parent.children, &node)
 }
 
+type ParsedTag struct {
+	isSelfClosing bool
+	// isClosing means it ends with "/>" and is NOT self-closing
+	isClosing  bool
+	tag        string
+	attributes map[string]string
+}
+
+func parseTag(tag string) ParsedTag {
+	t := ParsedTag{}
+	t.isSelfClosing = tag[len(tag)-1] == '/'
+	t.isClosing = tag[0] == '/'
+
+	// Opening and self-closing tags may have attributes
+	// like <meta charset="UTF-8" /> or <p class="title">
+	// Also, parse attributes such as <button disabled> in which
+	// we don't have the form attr=val
+	if t.isSelfClosing || !t.isClosing {
+		split := strings.Split(tag, " ")
+		t.tag = split[0]
+
+		t.attributes = make(map[string]string)
+		for i := 1; i < len(split); i++ {
+			if strings.Contains(split[i], "=") {
+				kv := strings.Split(split[i], "=")
+				// Remove quotes if present
+				if strings.Contains(kv[1], "'") || strings.Contains(kv[1], "\"") {
+					t.attributes[kv[0]] = kv[1][1 : len(kv[1])-1]
+				} else {
+					t.attributes[kv[0]] = kv[1]
+				}
+			} else {
+				// attributes without '=' default to an empty string
+				t.attributes[split[i]] = ""
+			}
+		}
+	}
+
+	return t
+}
+
 func (t *tree) AddTag(tag string) {
 	if tag == "!doctype html" {
 		return
 	}
-	if tag[0] == '/' || tag[len(tag)-1] == '/' {
-		var node *Element
+
+	newTag := parseTag(tag)
+
+	var node *Element
+	if newTag.isSelfClosing {
+		parent := t.unfinished[len(t.unfinished)-1]
+		node = &Element{text: newTag.tag, parent: parent, children: make([]*Element, 0, 1), attributes: newTag.attributes}
+		parent.children = append(parent.children, node)
+		return
+	}
+
+	if newTag.isClosing {
 		// self closing tag needs further parsing
-		if tag[len(tag)-1] == '/' {
-			tag = strings.Split(tag, " ")[0]
-			parent := t.unfinished[len(t.unfinished)-1]
-			node = &Element{text: tag, parent: parent, children: make([]*Element, 0, 1)}
-			parent.children = append(parent.children, node)
-			return
-		} else {
-			node = t.unfinished[len(t.unfinished)-1]
-		}
+		node = t.unfinished[len(t.unfinished)-1]
 
 		if len(t.unfinished) == 1 {
 			t.Root = node
@@ -57,10 +101,10 @@ func (t *tree) AddTag(tag string) {
 	} else {
 		if len(t.unfinished) > 0 {
 			parent := t.unfinished[len(t.unfinished)-1]
-			node := Element{text: tag, parent: parent, children: make([]*Element, 0, 1)}
+			node := Element{text: newTag.tag, parent: parent, children: make([]*Element, 0, 1)}
 			t.unfinished = append(t.unfinished, &node)
 		} else {
-			node := Element{text: tag, children: make([]*Element, 0, 1)}
+			node := Element{text: tag, children: make([]*Element, 0, 1), attributes: newTag.attributes}
 			t.unfinished = append(t.unfinished, &node)
 		}
 	}
@@ -74,6 +118,7 @@ func PrintTree(root *Element, indent int) {
 		fmt.Print("  ")
 	}
 	fmt.Println(root.text)
+	fmt.Println(root.attributes)
 
 	for _, child := range root.children {
 		PrintTree(child, indent+2)

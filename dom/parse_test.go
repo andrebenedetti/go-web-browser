@@ -84,5 +84,4 @@ func TestAddNestedTags(t *testing.T) {
 	if tree.Root.children[0].children[0].text != "Lorem ipsum" {
 		t.Fatal("'p' should have 'Lorem ipsum' as child")
 	}
-
 }

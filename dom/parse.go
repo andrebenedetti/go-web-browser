@@ -5,9 +5,8 @@ import (
 	"strings"
 )
 
-// elementType may be "Element" or "Text"
 type Element struct {
-	elementType string
+	elementType string // "element" or "text"
 	text        string
 	children    []*Element
 	parent      *Element
@@ -43,6 +42,8 @@ func (t *tree) AddTag(tag string) {
 			tag = strings.Split(tag, " ")[0]
 			parent := t.unfinished[len(t.unfinished)-1]
 			node = &Element{text: tag, parent: parent, children: make([]*Element, 0, 1)}
+			parent.children = append(parent.children, node)
+			return
 		} else {
 			node = t.unfinished[len(t.unfinished)-1]
 		}
@@ -106,5 +107,4 @@ func ParseBody(body string, tree *tree) {
 	if !inTag && text != "" {
 		tree.AddText(text)
 	}
-
 }

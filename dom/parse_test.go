@@ -50,6 +50,21 @@ func TestAddClosedTagWithText(t *testing.T) {
 	}
 }
 
+func TestAddSelfClosingTag(t *testing.T) {
+	tree := NewTree()
+
+	tree.AddTag("html")
+	tree.AddTag("meta charset=\"UTF-8\" /")
+
+	if len(tree.unfinished) > 1 || tree.unfinished[0].text != "html" {
+		t.Fatal("Self-closing tag should not be added to the unfinished slice")
+	}
+
+	if tree.unfinished[0].children[0].text != "meta" {
+		t.Fatal("Self closing tag should be finished and added to parent")
+	}
+}
+
 func TestAddNestedTags(t *testing.T) {
 	tree := NewTree()
 	tree.AddTag("html")

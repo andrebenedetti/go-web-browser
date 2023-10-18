@@ -21,21 +21,17 @@ func NewTree() *tree {
 	return &tree{unfinished: make([]*Element, 0)}
 }
 
-func (t *tree) AddText(text string) {
-	fmt.Printf("Adding text: %s\n", text)
+func (t *tree) addText(text string) {
 	parent := t.unfinished[len(t.unfinished)-1]
 	node := Element{text: text, parent: parent, elementType: "text"}
 	parent.children = append(parent.children, &node)
 }
 
-func (t *tree) AddTag(tag string) {
+func (t *tree) addTag(tag string) {
 	if tag == "!doctype html" {
 		return
 	}
 	if tag[0] == '/' || tag[len(tag)-1] == '/' {
-		fmt.Printf("Adding tag: %s\n", tag)
-		// pop last node
-
 		var node *Element
 		// self closing tag needs further parsing
 		if tag[len(tag)-1] == '/' {
@@ -86,18 +82,20 @@ func PrintTree(root *Element, indent int) {
 }
 
 func ParseBody(body string, tree *tree) {
+	body = strings.ReplaceAll(body, "\n", "")
+	body = strings.ReplaceAll(body, "\t", "")
 	text := ""
 	inTag := false
 	for _, c := range body {
 		if c == '<' {
 			inTag = true
 			if text != "" {
-				tree.AddText(text)
+				tree.addText(text)
 				text = ""
 			}
 		} else if c == '>' {
 			inTag = false
-			tree.AddTag(text)
+			tree.addTag(text)
 			text = ""
 		} else {
 			text = text + string(c)
@@ -105,6 +103,6 @@ func ParseBody(body string, tree *tree) {
 	}
 
 	if !inTag && text != "" {
-		tree.AddText(text)
+		tree.addText(text)
 	}
 }

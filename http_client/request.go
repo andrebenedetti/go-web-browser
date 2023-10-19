@@ -52,26 +52,6 @@ func parseHeaders(raw []string) map[string]string {
 	return headers
 }
 
-func parseUrlScheme(url string) (string, error) {
-	split := strings.Split(url, "://")
-	if len(split) > 2 {
-		return "", errors.New("malformed url string")
-	}
-
-	// Let's assume http if no scheme is set.
-	// TODO: assume https
-	if len(split) == 1 {
-		return "http", nil
-	}
-
-	scheme := split[0]
-	if scheme != "http" && scheme != "file" {
-		return scheme, errors.New("unsupported url scheme")
-	}
-
-	return scheme, nil
-}
-
 func RetrieveUrl(url string) (Response, error) {
 	scheme, err := parseUrlScheme(url)
 	if err != nil {

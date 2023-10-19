@@ -55,7 +55,7 @@ func parseHeaders(raw []string) map[string]string {
 func parseUrlScheme(url string) (string, error) {
 	split := strings.Split(url, "://")
 	if len(split) > 2 {
-		return "", errors.New("Malformed url string")
+		return "", errors.New("malformed url string")
 	}
 
 	// Let's assume http if no scheme is set.
@@ -66,10 +66,9 @@ func parseUrlScheme(url string) (string, error) {
 
 	scheme := split[0]
 	if scheme != "http" && scheme != "file" {
-		return scheme, errors.New("Unsupported url scheme")
+		return scheme, errors.New("unsupported url scheme")
 	}
 
-	fmt.Println(scheme)
 	return scheme, nil
 }
 
@@ -91,18 +90,18 @@ func RetrieveUrl(url string) (Response, error) {
 		if host != "" && host != "localhost" && host != "go-web-browser" {
 			return Response{}, errors.New("file:// scheme pointing to a host different than localhost is not currently supported")
 		}
-		return FileRequest(host, path)
+		return fileRequest(host, path)
 	}
-	return HttpRequest("GET", url)
+	return httpRequest("GET", url)
 
 }
 
-func FileRequest(host string, path string) (Response, error) {
+func fileRequest(host string, path string) (Response, error) {
 	fmt.Println("File request", host, path)
 	return Response{}, nil
 }
 
-func HttpRequest(method string, url string) (Response, error) {
+func httpRequest(method string, url string) (Response, error) {
 	// Let's copy what go's standard lib does and assume
 	// an empty string as being a GET
 	if method == "" {
@@ -111,13 +110,13 @@ func HttpRequest(method string, url string) (Response, error) {
 
 	var resp Response
 	if !isValidHttpMethod(method) {
-		return resp, errors.New("Invalid HTTP method")
+		return resp, errors.New("invalid HTTP method")
 	}
 
 	if method != "GET" {
 		// Let's first support GET method.
 		// TODO: support other methods
-		return resp, errors.New("Method not supported")
+		return resp, errors.New("method not supported")
 	}
 
 	conn, err := net.Dial("tcp", url+":80")
@@ -164,12 +163,12 @@ func HttpRequest(method string, url string) (Response, error) {
 
 	resp.Headers = parseHeaders(rawHeaders)
 	if resp.Headers["content-encoding"] != "" || resp.Headers["transfer-encoding"] != "" {
-		return resp, errors.New("Request encoding not implemented")
+		return resp, errors.New("request encoding not implemented")
 	}
 
 	// Using 1 MB buffer size to read the page, which is a lot for a web page
 	// TODO: This can be revisited later
-	buffer := make([]byte, 10000, 10000)
+	buffer := make([]byte, 10000)
 	for {
 		_, err := reader.Read(buffer)
 		if err != nil {

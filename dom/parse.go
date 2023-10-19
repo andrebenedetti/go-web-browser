@@ -6,28 +6,28 @@ import (
 )
 
 type Element struct {
-	elementType string // "element" or "text"
-	text        string
-	children    []*Element
-	parent      *Element
+	ElementType string // "element" or "text"
+	Text        string
+	Children    []*Element
+	Parent      *Element
 }
 
-type tree struct {
+type Tree struct {
 	Root       *Element
 	unfinished []*Element
 }
 
-func NewTree() *tree {
-	return &tree{unfinished: make([]*Element, 0)}
+func NewTree() *Tree {
+	return &Tree{unfinished: make([]*Element, 0)}
 }
 
-func (t *tree) addText(text string) {
+func (t *Tree) addText(text string) {
 	parent := t.unfinished[len(t.unfinished)-1]
-	node := Element{text: text, parent: parent, elementType: "text"}
-	parent.children = append(parent.children, &node)
+	node := Element{Text: text, Parent: parent, ElementType: "text"}
+	parent.Children = append(parent.Children, &node)
 }
 
-func (t *tree) addTag(tag string) {
+func (t *Tree) addTag(tag string) {
 	if tag == "!doctype html" {
 		return
 	}
@@ -37,8 +37,8 @@ func (t *tree) addTag(tag string) {
 		if tag[len(tag)-1] == '/' {
 			tag = strings.Split(tag, " ")[0]
 			parent := t.unfinished[len(t.unfinished)-1]
-			node = &Element{text: tag, parent: parent, children: make([]*Element, 0, 1)}
-			parent.children = append(parent.children, node)
+			node = &Element{Text: tag, Parent: parent, Children: make([]*Element, 0, 1), ElementType: "tag"}
+			parent.Children = append(parent.Children, node)
 			return
 		} else {
 			node = t.unfinished[len(t.unfinished)-1]
@@ -54,14 +54,14 @@ func (t *tree) addTag(tag string) {
 		t.unfinished = newUnifished
 
 		parent := t.unfinished[len(t.unfinished)-1]
-		parent.children = append(parent.children, node)
+		parent.Children = append(parent.Children, node)
 	} else {
 		if len(t.unfinished) > 0 {
 			parent := t.unfinished[len(t.unfinished)-1]
-			node := Element{text: tag, parent: parent, children: make([]*Element, 0, 1)}
+			node := Element{Text: tag, Parent: parent, Children: make([]*Element, 0, 1), ElementType: "tag"}
 			t.unfinished = append(t.unfinished, &node)
 		} else {
-			node := Element{text: tag, children: make([]*Element, 0, 1)}
+			node := Element{Text: tag, Children: make([]*Element, 0, 1), ElementType: "tag"}
 			t.unfinished = append(t.unfinished, &node)
 		}
 	}
@@ -74,14 +74,14 @@ func PrintTree(root *Element, indent int) {
 	for i := 0; i < indent; i++ {
 		fmt.Print("  ")
 	}
-	fmt.Println(root.text)
+	fmt.Println(root.Text)
 
-	for _, child := range root.children {
+	for _, child := range root.Children {
 		PrintTree(child, indent+2)
 	}
 }
 
-func ParseBody(body string, tree *tree) {
+func ParseBody(body string, tree *Tree) {
 	body = strings.ReplaceAll(body, "\n", "")
 	body = strings.ReplaceAll(body, "\t", "")
 	text := ""
